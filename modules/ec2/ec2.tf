@@ -1,10 +1,38 @@
-provider "aws" {
-  region = var.region
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
 }
 
 ##
-## Instance Profile
+## Variables
 ##
+
+variable "region" {
+  type    = string
+  default = "us-east-2"
+}
+
+variable "name" {
+  type = string
+}
+
+variable "vpc_id" {
+  type = string
+}
+
+variable "subnet_id" {
+  type = string
+}
+
+##
+## Resources
+##
+
+# Instance Profile
 
 resource "aws_iam_role" "ec2_ssm_role" {
   assume_role_policy = <<EOF
@@ -21,7 +49,6 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "ssm-policy-attach" {
-#  name       = "ssm-policy-attach"
   role       = aws_iam_role.ec2_ssm_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
@@ -31,9 +58,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   role = aws_iam_role.ec2_ssm_role.name
 }
 
-##
-## Security group
-##
+# Security group
 
 resource "aws_security_group" "ac_security_group" {
   name        = "AndyC_SG"
@@ -56,11 +81,10 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ssh_in" {
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   security_group_id = aws_security_group.ac_security_group.id
   cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
+  ip_protocol       = "-1"
 }
 
-##
-##
+# EC2 Instance
 
 module "ec2_instance" {
   source = "terraform-aws-modules/ec2-instance/aws"
@@ -81,4 +105,18 @@ module "ec2_instance" {
     Terraform   = "true"
     Environment = "dev"
   }
+}
+
+##
+## Outputs
+##
+
+output "public_ip" {
+  description = "The public IP of the created EC2 instance"
+  value       = module.ec2_instance.public_ip
+}
+
+output "private_ip" {
+  description = "The public IP of the created EC2 instance"
+  value       = module.ec2_instance.private_ip
 }

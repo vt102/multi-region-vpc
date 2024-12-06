@@ -19,6 +19,7 @@ terraform {
 provider "aws" {
   shared_config_files = ["~/.aws/config"]
   profile             = "eng_playground"
+  region              = "us-east-1"
 
   default_tags {
     tags = {
@@ -26,4 +27,19 @@ provider "aws" {
       Owner       = "andy.cowell@rearc.io"
     }
   }
+}
+
+provider "aws" {
+  alias  = "hub"
+  region = "us-east-1"
+}
+
+provider aws {
+  region = "us-east-2"
+  alias  = "us-east-2"
+}
+
+provider aws {
+  region = "us-west-2"
+  alias  = "us-west-2"
 }

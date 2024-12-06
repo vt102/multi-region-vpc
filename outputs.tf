@@ -13,3 +13,12 @@ output "ec21-int-ip" {
 output "ec22-int-ip" {
   value = module.ec22.private_ip
 }
+
+output "tgw-hub-id" {
+  value = aws_ec2_transit_gateway.tgw-hub.id
+}
+
+output "tgw-spoke-us-east-2-id" {
+#  value = aws_ec2_transit_gateway.spoke-us-east-2.id
+  value = module.tgw-spoke-us-east-2.id
+}
