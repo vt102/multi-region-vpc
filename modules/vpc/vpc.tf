@@ -102,17 +102,6 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "tgw-vpc-attachment" {
 ## routing tables, pointing at the TGW we just attached to
 ##
 
-data "aws_route_tables" "spoke-vpc_pub_rts" {
-  provider = aws.local
-
-  vpc_id   = module.vpc_module.vpc_id
-
-  filter {
-    name   = "tag:Name"
-    values = ["AC_VPC_spoke-*-public"]
-  }
-}
-
 resource "aws_route" "spoke-vpc_pub" {
   depends_on = [
     module.vpc_module,
@@ -120,20 +109,9 @@ resource "aws_route" "spoke-vpc_pub" {
   ]
   provider = aws.local
 
-  route_table_id         = "${element(data.aws_route_tables.spoke-vpc_pub_rts.ids, 0)}"
+  route_table_id         = module.vpc_module.public_route_table_ids[0]
   destination_cidr_block = "10.0.0.0/8"
   transit_gateway_id     = var.tgw-id
-}
-
-data "aws_route_tables" "spoke-vpc_pri_rts" {
-  provider = aws.local
-
-  vpc_id   = module.vpc_module.vpc_id
-
-  filter {
-    name   = "tag:Name"
-    values = ["AC_VPC_spoke-*-private"]
-  }
 }
 
 resource "aws_route" "spoke-vpc_pri" {
@@ -143,7 +121,7 @@ resource "aws_route" "spoke-vpc_pri" {
   ]
   provider = aws.local
 
-  route_table_id         = "${element(data.aws_route_tables.spoke-vpc_pri_rts.ids, 0)}"
+  route_table_id         = module.vpc_module.private_route_table_ids[0]
   destination_cidr_block = "10.0.0.0/8"
   transit_gateway_id     = var.tgw-id
 }
