@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    random = {
+      source = "hashicorp/random"
+      version = "~> 3.6.3"
+    }
   }
 }
 
@@ -53,15 +57,20 @@ resource "aws_iam_role_policy_attachment" "ssm-policy-attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+resource "random_string" "uniq" {
+  length  = 8
+  special = false
+}
+
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "${var.name}-instance_profile"
+  name = "${var.name}-instance_profile-${random_string.uniq.result}"
   role = aws_iam_role.ec2_ssm_role.name
 }
 
 # Security group
 
 resource "aws_security_group" "ac_security_group" {
-  name        = "AndyC_SG"
+  name        = "AndyC_SG-${random_string.uniq.result}"
   description = "Ephemeral SG for Andy Cowell"
   vpc_id      = var.vpc_id
 
