@@ -32,6 +32,22 @@ variable "subnet_id" {
   type = string
 }
 
+variable "ami" {
+  type = map(any)
+  default = {
+    "us-east-1": "ami-0c614dee691cbbf37",
+    "us-east-2": "ami-018875e7376831abe",
+    "us-west-2": "ami-0a897ba00eaed7398"
+  }
+
+}
+
+##
+## Data
+##
+
+data "aws_region" "current" {}
+
 ##
 ## Resources
 ##
@@ -99,6 +115,8 @@ module "ec2_instance" {
   source = "terraform-aws-modules/ec2-instance/aws"
 
   name = "AC-test-01"
+
+  ami = var.ami[data.aws_region.current.name]
 
   instance_type = "t2.micro"
   key_name      = "ac-delicate-glade"
